@@ -49,6 +49,11 @@ class Archmage(commands.Bot):
         await member.dm_channel.send(
             f'Приветствую тебя неофит {member.name}!'
         )
+    async def first_player(self, message):
+        await message.channel.send(random.choice(message.content.split('; ')))
+
+    async def cards_pack(self, message):
+        await message.channel.send(random.choice(['черные', 'белые', 'синие', 'красные', 'зеленые']))
 
     async def on_message(self, message):
         self.channel = message.channel
