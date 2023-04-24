@@ -17,7 +17,7 @@ handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-TOKEN = "MTA5OTY2Nzk3MjUzNDA0Njc1MA.G5qtn6.TjBfo3suqhD2663jB5okWvR_OCEGfaaNWi6fuU"
+TOKEN = "MTA5OTY2Nzk3MjUzNDA0Njc1MA.GBxNK9.WWfelC6DVYl08wVzxP4LqPrFOQLPWUNvycNKRI"
 
 
 class MyView(discord.ui.View):
