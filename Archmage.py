@@ -4,6 +4,7 @@ from discord.ext import commands
 from discord.ui import Button, View
 import logging
 import sqlite3
+import random
 
 
 con = sqlite3.connect("Explanation")
