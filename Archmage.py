@@ -49,6 +49,7 @@ class Archmage(commands.Bot):
         await member.dm_channel.send(
             f'Приветствую тебя неофит {member.name}!'
         )
+        
     async def first_player(self, message):
         await message.channel.send(random.choice(message.content.split('; ')))
 
@@ -70,6 +71,10 @@ class Archmage(commands.Bot):
         else:
             if "приветствую" in message.content.lower():
                 await self.told(message)
+            if "; " in message.content:
+                await self.first_player(message)
+            if "колод" in message.content.lower():
+                await self.cards_pack(message)
             else:
                 await message.channel.send("Спасибо за сообщение")
 
