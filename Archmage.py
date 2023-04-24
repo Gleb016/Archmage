@@ -1,6 +1,7 @@
 import discord
+from Rule import game_beginning, starting_phase
 from discord.ext import commands
-from discord.ui import Button
+from discord.ui import Button, View
 import logging
 import sqlite3
 
@@ -17,7 +18,7 @@ handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-TOKEN = "MTA5OTY2Nzk3MjUzNDA0Njc1MA.GBxNK9.WWfelC6DVYl08wVzxP4LqPrFOQLPWUNvycNKRI"
+TOKEN = ""
 
 
 class MyView(discord.ui.View):
@@ -49,6 +50,7 @@ class Archmage(commands.Bot):
         )
 
     async def on_message(self, message):
+        self.channel = message.channel
         self.message = message
         if message.author == self.user:
             return
@@ -61,30 +63,57 @@ class Archmage(commands.Bot):
                 await message.channel.send(self.term())
         else:
             if "приветствую" in message.content.lower():
-                await message.channel.send(self.told())
+                await self.told(message)
             else:
                 await message.channel.send("Спасибо за сообщение")
 
             if 'поведайте' or 'объясните' in self.message:
-                self.told()
+                await self.told(message)
 
-    def told(self):
-        message = self.message.content.lower()
-        if 'term' in message or 'terms' in message \
-                or 'термин' in message or 'термины' in message:
+
+    async def told(self, message):
+        message_txt = str(message.content.lower())
+        if 'term' in message_txt or 'terms' in message_txt \
+                or 'термин' in message_txt or 'термины' in message_txt:
             self.Term = True
-            return f'Приветствую тебя неофит {str(self.message.author)[:-5]}, что именно тебя интересует?'
-        elif 'rule' in self.message or 'rules' in self.message \
-                or 'правила' in self.message or 'правило' in self.message \
-                or 'механику' in self.message or 'механики' in self.message:
-                pass
+            await message.channel.send(f'Приветствую тебя неофит {str(self.message.author)[:-5]},'
+                                       f' что именно тебя интересует?')
+        elif 'rule' in message_txt or 'rules' in message_txt \
+                or 'правила' in message_txt or 'правило' in message_txt \
+                or 'механику' in message_txt or 'механики' in message_txt:
+            await self.rule(message)
+    async def rule(self, message):
+         ctx = await self.get_context(message)
+         async def move_1(interaction):
+            await interaction.response.send_message(game_beginning())
+         async def move_2(interaction):
+            await interaction.response.send_message(starting_phase())
+
+         buttun_1 = Button(label='Начало игры', style=discord.ButtonStyle.gray)
+         buttun_2 = Button(label='Начало хода', style=discord.ButtonStyle.green)
+         buttun_3 = Button(label='Начало игры', style=discord.ButtonStyle.red)
+         buttun_4 = Button(label='Начало игры', style=discord.ButtonStyle.green)
+         buttun_5 = Button(label='Видео игрок по MTG', url='https://www.youtube.com/watch?v=kXOD7S8F48c')
+         view = View()
+         buttun_1.callback = move_1
+         buttun_2.callback = move_2
+
+         view.add_item(buttun_1)
+         view.add_item(buttun_2)
+         view.add_item(buttun_3)
+         view.add_item(buttun_4)
+         view.add_item(buttun_5)
+         await ctx.send(view=view)
+
+
+
 
     def term(self):
         message = self.message.content.lower()
         result = cur.execute(f"""Select Name,Explanation From Term
                         Where name LIKE "{message.upper()}%" """).fetchall()
 
-        print(result)
+
         if len(result) == 1:
             self.Term = False
             return f'**{result[0][0]}**', f'{result[0][1]}'
@@ -94,7 +123,8 @@ class Archmage(commands.Bot):
             if len(result) != 0:
                 return f"Может ты имел в ввиду {', '.join([i[0] for i in result])}"
             else:
-                return 'прости неофит не могу понят о чем ты толкуешь'
+                return 'прости неофит не могу понять, о чем ты толкуешь'
+
 
 
 
