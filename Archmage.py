@@ -4,6 +4,7 @@ from discord.ext import commands
 from discord.ui import Button, View
 import logging
 import sqlite3
+import random
 
 con = sqlite3.connect("Explanation")
 cur = con.cursor()
@@ -47,6 +48,12 @@ class Archmage(commands.Bot):
         await member.dm_channel.send(
             f'Приветствую тебя неофит {member.name}!'
         )
+        
+    async def first_player(self, message):
+        await message.channel.send(random.choice(message.content.split('; ')))
+
+    async def cards_pack(self, message):
+        await message.channel.send(random.choice(['черные', 'белые', 'синие', 'красные', 'зеленые']))
 
     async def on_message(self, message):
         self.channel = message.channel
@@ -65,6 +72,10 @@ class Archmage(commands.Bot):
         else:
             if "приветствую" in message.content.lower():
                 await self.told(message)
+            if "; " in message.content:
+                await self.first_player(message)
+            if "колод" in message.content.lower():
+                await self.cards_pack(message)
             else:
                 await message.channel.send("Спасибо за сообщение")
 
