@@ -1,10 +1,9 @@
 import discord
-from Rule import game_beginning, starting_phase
+from Rule import game_beginning, starting_phase, end_phase, global_phase, Atack_phase
 from discord.ext import commands
 from discord.ui import Button, View
 import logging
 import sqlite3
-
 
 con = sqlite3.connect("Explanation")
 cur = con.cursor()
@@ -18,7 +17,7 @@ handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-TOKEN = ""
+TOKEN = "MTA5OTY2Nzk3MjUzNDA0Njc1MA.GLe5l_.De4-R1lxfYmFN-ddlTgZp0F5F_Eb6s0IhiptPg"
 
 
 class MyView(discord.ui.View):
@@ -53,7 +52,9 @@ class Archmage(commands.Bot):
         self.channel = message.channel
         self.message = message
         if message.author == self.user:
+            print('bot')
             return
+        print("username1", message.author.name)
         if self.Term:
             if len(self.term()) == 2:
                 a, b = self.term()
@@ -70,49 +71,62 @@ class Archmage(commands.Bot):
             if 'поведайте' or 'объясните' in self.message:
                 await self.told(message)
 
-
     async def told(self, message):
         message_txt = str(message.content.lower())
+        if message.author == self.user:
+            return
         if 'term' in message_txt or 'terms' in message_txt \
                 or 'термин' in message_txt or 'термины' in message_txt:
             self.Term = True
+            print("username2", message.author.name)
             await message.channel.send(f'Приветствую тебя неофит {str(self.message.author)[:-5]},'
                                        f' что именно тебя интересует?')
         elif 'rule' in message_txt or 'rules' in message_txt \
                 or 'правила' in message_txt or 'правило' in message_txt \
                 or 'механику' in message_txt or 'механики' in message_txt:
             await self.rule(message)
+
     async def rule(self, message):
-         ctx = await self.get_context(message)
-         async def move_1(interaction):
+        ctx = await self.get_context(message)
+
+        async def move_1(interaction):
             await interaction.response.send_message(game_beginning())
-         async def move_2(interaction):
+
+        async def move_2(interaction):
             await interaction.response.send_message(starting_phase())
+        async def move_3(interaction):
+            await interaction.response.send_message(Atack_phase())
+        async def move_4(interaction):
+            await interaction.response.send_message(global_phase())
+        async def move_5(interaction):
+            await interaction.response.send_message(end_phase())
 
-         buttun_1 = Button(label='Начало игры', style=discord.ButtonStyle.gray)
-         buttun_2 = Button(label='Начало хода', style=discord.ButtonStyle.green)
-         buttun_3 = Button(label='Начало игры', style=discord.ButtonStyle.red)
-         buttun_4 = Button(label='Начало игры', style=discord.ButtonStyle.green)
-         buttun_5 = Button(label='Видео игрок по MTG', url='https://www.youtube.com/watch?v=kXOD7S8F48c')
-         view = View()
-         buttun_1.callback = move_1
-         buttun_2.callback = move_2
-
-         view.add_item(buttun_1)
-         view.add_item(buttun_2)
-         view.add_item(buttun_3)
-         view.add_item(buttun_4)
-         view.add_item(buttun_5)
-         await ctx.send(view=view)
+        buttun_1 = Button(label='Начало игры', style=discord.ButtonStyle.gray)
+        buttun_2 = Button(label='Начало хода', style=discord.ButtonStyle.green)
+        buttun_3 = Button(label='Фаза атаки', style=discord.ButtonStyle.green)
+        buttun_4 = Button(label='Главная фаза', style=discord.ButtonStyle.green)
+        buttun_5 = Button(label='Завершающая фаза', style=discord.ButtonStyle.green)
+        buttun_6 = Button(label='Видео игрок по MTG', url='https://www.youtube.com/watch?v=kXOD7S8F48c')
+        view = View()
+        buttun_1.callback = move_1
+        buttun_2.callback = move_2
+        buttun_3.callback = move_3
+        buttun_4.callback = move_4
+        buttun_5.callback = move_5
 
 
-
+        view.add_item(buttun_1)
+        view.add_item(buttun_2)
+        view.add_item(buttun_3)
+        view.add_item(buttun_4)
+        view.add_item(buttun_5)
+        view.add_item(buttun_6)
+        await ctx.send(view=view)
 
     def term(self):
         message = self.message.content.lower()
         result = cur.execute(f"""Select Name,Explanation From Term
                         Where name LIKE "{message.upper()}%" """).fetchall()
-
 
         if len(result) == 1:
             self.Term = False
@@ -124,8 +138,6 @@ class Archmage(commands.Bot):
                 return f"Может ты имел в ввиду {', '.join([i[0] for i in result])}"
             else:
                 return 'прости неофит не могу понять, о чем ты толкуешь'
-
-
 
 
 Bot = Archmage()
